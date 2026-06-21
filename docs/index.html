@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INDOPACOM Logistics Tanker Family — Synthesis Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0a1628;
+      color: #cdd6e0;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #0e2244 0%, #0a1628 55%, #0e2244 100%);
+      border-bottom: 1px solid rgba(100,149,237,0.22);
+      padding: 2.25rem 2rem 1.75rem;
+      text-align: center;
+    }
+    .eyebrow {
+      font-size: 0.65rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #6495ed;
+      margin-bottom: 0.6rem;
+    }
+    header h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #e4ecf4;
+      letter-spacing: -0.01em;
+    }
+    .subtitle {
+      margin-top: 0.5rem;
+      font-size: 0.82rem;
+      color: #6a85a4;
+    }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+    }
+    .section-label {
+      font-size: 0.63rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #5070a0;
+      margin-bottom: 1rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid rgba(100,149,237,0.15);
+    }
+
+    /* ── Family Cards ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2.75rem;
+    }
+    .card {
+      background: #101f38;
+      border: 1px solid rgba(100,149,237,0.18);
+      border-radius: 8px;
+      padding: 1.3rem 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent);
+    }
+    .card.t120 { --accent: #38bdf8; }
+    .card.t150 { --accent: #34d399; }
+    .card.t185 { --accent: #f59e0b; }
+
+    .card-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+    .card-role {
+      font-size: 0.72rem;
+      color: #5a7898;
+      margin-bottom: 1.1rem;
+      line-height: 1.3;
+    }
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.28rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.79rem;
+    }
+    .stat:last-child { border-bottom: none; }
+    .stat-lbl { color: #617d98; }
+    .stat-val { font-weight: 600; color: #c8d4e0; font-variant-numeric: tabular-nums; }
+    .stat-val.hi { color: var(--accent); }
+
+    /* ── Charts ── */
+    .charts {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.1rem;
+    }
+    .chart-card {
+      background: #101f38;
+      border: 1px solid rgba(100,149,237,0.14);
+      border-radius: 8px;
+      padding: 1.2rem 1.25rem 1rem;
+    }
+    .chart-title {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #8aaac8;
+      margin-bottom: 0.9rem;
+    }
+    .chart-wrap {
+      position: relative;
+      height: 210px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.68rem;
+      color: #2e4a6a;
+      border-top: 1px solid rgba(100,149,237,0.1);
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 800px) {
+      .cards  { grid-template-columns: 1fr; }
+      .charts { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Naval Architecture · Parametric Synthesis · ABS SVR / Jones Act / MARPOL</div>
+  <h1>INDOPACOM Distributed Logistics Tanker Family</h1>
+  <div class="subtitle">
+    100 – 200 m LOA &nbsp;·&nbsp; MAN 32/44CR Propulsion &nbsp;·&nbsp;
+    Pearl Harbor → Guam Mission Radius (4,500 nm)
+  </div>
+</header>
+
+<div class="container">
+
+  <p class="section-label">Baseline Family — Three Design Anchor Points</p>
+  <div class="cards">
+
+    <div class="card t120">
+      <div class="card-name">T120</div>
+      <div class="card-role">Coastal Logistics · INDOPACOM Minimum</div>
+      <div class="stat"><span class="stat-lbl">LOA</span>              <span class="stat-val">122 m</span></div>
+      <div class="stat"><span class="stat-lbl">Beam / Depth</span>     <span class="stat-val">18.5 m / 9.8 m</span></div>
+      <div class="stat"><span class="stat-lbl">Draft</span>            <span class="stat-val">6.8 m</span></div>
+      <div class="stat"><span class="stat-lbl">Displacement</span>     <span class="stat-val">11,716 t</span></div>
+      <div class="stat"><span class="stat-lbl">Deadweight</span>       <span class="stat-val hi">9,136 t</span></div>
+      <div class="stat"><span class="stat-lbl">Cargo Capacity</span>   <span class="stat-val">8,948 t</span></div>
+      <div class="stat"><span class="stat-lbl">Design Speed</span>     <span class="stat-val">13.5 kn</span></div>
+      <div class="stat"><span class="stat-lbl">Brake Power</span>      <span class="stat-val">1,699 kW</span></div>
+      <div class="stat"><span class="stat-lbl">Fuel Rate</span>        <span class="stat-val">7.14 t/day</span></div>
+      <div class="stat"><span class="stat-lbl">Range</span>            <span class="stat-val">5,500 nm</span></div>
+      <div class="stat"><span class="stat-lbl">GM (loaded)</span>      <span class="stat-val">7.94 m</span></div>
+      <div class="stat"><span class="stat-lbl">Crew</span>             <span class="stat-val">8</span></div>
+      <div class="stat"><span class="stat-lbl">Build Cost</span>       <span class="stat-val hi">$39.2 M</span></div>
+      <div class="stat"><span class="stat-lbl">Annual OpEx</span>      <span class="stat-val">$3.8 M/yr</span></div>
+    </div>
+
+    <div class="card t150">
+      <div class="card-name">T150</div>
+      <div class="card-role">Primary INDOPACOM Logistics Tanker</div>
+      <div class="stat"><span class="stat-lbl">LOA</span>              <span class="stat-val">152 m</span></div>
+      <div class="stat"><span class="stat-lbl">Beam / Depth</span>     <span class="stat-val">23.0 m / 12.5 m</span></div>
+      <div class="stat"><span class="stat-lbl">Draft</span>            <span class="stat-val">8.5 m</span></div>
+      <div class="stat"><span class="stat-lbl">Displacement</span>     <span class="stat-val">22,976 t</span></div>
+      <div class="stat"><span class="stat-lbl">Deadweight</span>       <span class="stat-val hi">18,288 t</span></div>
+      <div class="stat"><span class="stat-lbl">Cargo Capacity</span>   <span class="stat-val">17,913 t</span></div>
+      <div class="stat"><span class="stat-lbl">Design Speed</span>     <span class="stat-val">14.0 kn</span></div>
+      <div class="stat"><span class="stat-lbl">Brake Power</span>      <span class="stat-val">2,779 kW</span></div>
+      <div class="stat"><span class="stat-lbl">Fuel Rate</span>        <span class="stat-val">11.67 t/day</span></div>
+      <div class="stat"><span class="stat-lbl">Range</span>            <span class="stat-val">8,000 nm</span></div>
+      <div class="stat"><span class="stat-lbl">GM (loaded)</span>      <span class="stat-val">9.76 m</span></div>
+      <div class="stat"><span class="stat-lbl">Crew</span>             <span class="stat-val">10</span></div>
+      <div class="stat"><span class="stat-lbl">Build Cost</span>       <span class="stat-val hi">$68.4 M</span></div>
+      <div class="stat"><span class="stat-lbl">Annual OpEx</span>      <span class="stat-val">$5.9 M/yr</span></div>
+    </div>
+
+    <div class="card t185">
+      <div class="card-name">T185</div>
+      <div class="card-role">Forward Area Bulk Replenishment</div>
+      <div class="stat"><span class="stat-lbl">LOA</span>              <span class="stat-val">187 m</span></div>
+      <div class="stat"><span class="stat-lbl">Beam / Depth</span>     <span class="stat-val">28.5 m / 15.5 m</span></div>
+      <div class="stat"><span class="stat-lbl">Draft</span>            <span class="stat-val">10.2 m</span></div>
+      <div class="stat"><span class="stat-lbl">Displacement</span>     <span class="stat-val">42,606 t</span></div>
+      <div class="stat"><span class="stat-lbl">Deadweight</span>       <span class="stat-val hi">34,327 t</span></div>
+      <div class="stat"><span class="stat-lbl">Cargo Capacity</span>   <span class="stat-val">33,703 t</span></div>
+      <div class="stat"><span class="stat-lbl">Design Speed</span>     <span class="stat-val">14.5 kn</span></div>
+      <div class="stat"><span class="stat-lbl">Brake Power</span>      <span class="stat-val">4,413 kW</span></div>
+      <div class="stat"><span class="stat-lbl">Fuel Rate</span>        <span class="stat-val">18.54 t/day</span></div>
+      <div class="stat"><span class="stat-lbl">Range</span>            <span class="stat-val">9,000 nm</span></div>
+      <div class="stat"><span class="stat-lbl">GM (loaded)</span>      <span class="stat-val">12.40 m</span></div>
+      <div class="stat"><span class="stat-lbl">Crew</span>             <span class="stat-val">14</span></div>
+      <div class="stat"><span class="stat-lbl">Build Cost</span>       <span class="stat-val hi">$117.7 M</span></div>
+      <div class="stat"><span class="stat-lbl">Annual OpEx</span>      <span class="stat-val">$9.4 M/yr</span></div>
+    </div>
+
+  </div><!-- /cards -->
+
+  <p class="section-label">Trade Space — 100–200 m LOA Parametric Sweep</p>
+  <div class="charts">
+
+    <div class="chart-card">
+      <div class="chart-title">Deadweight Capacity vs LOA</div>
+      <div class="chart-wrap"><canvas id="chartDWT"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Build Cost vs LOA</div>
+      <div class="chart-wrap"><canvas id="chartCost"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Installed Brake Power vs LOA</div>
+      <div class="chart-wrap"><canvas id="chartPower"></canvas></div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-title">Fuel Consumption vs LOA</div>
+      <div class="chart-wrap"><canvas id="chartFuel"></canvas></div>
+    </div>
+
+  </div><!-- /charts -->
+
+</div><!-- /container -->
+
+<footer>
+  Greg Tanker Synthesis Model v0.1 &nbsp;·&nbsp;
+  ABS SVR / Jones Act / MARPOL &nbsp;·&nbsp;
+  INDOPACOM Distributed Logistics Product Tanker Family
+</footer>
+
+<script>
+  // ── Data ──────────────────────────────────────────────────────────────────
+  const SWEEP = {
+    loa:  [100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200],
+    dwt:  [4988,5810,6717,7713,8803,9991,11282,12679,14188,15812,17556,19424,21421,23550,25817,28225,30779,33484,36343,39361,42543],
+    cost: [25.3,28.2,31.4,34.8,38.5,42.4,46.6,51.1,55.8,60.8,66.2,71.8,77.7,84.0,90.6,97.5,104.7,112.3,120.2,128.5,137.2],
+    pb:   [1302,1422,1548,1678,1813,1952,2096,2244,2396,2553,2714,2879,3048,3222,3399,3581,3766,3956,4150,4347,4549],
+    fuel: [5.47,5.97,6.50,7.05,7.61,8.20,8.80,9.42,10.06,10.72,11.40,12.09,12.80,13.53,14.28,15.04,15.82,16.62,17.43,18.26,19.10],
+  };
+
+  const BASELINE = [
+    { name:'T120', loa:122, dwt:9136,  cost:39.2,  pb:1699, fuel:7.14,  color:'#38bdf8' },
+    { name:'T150', loa:152, dwt:18288, cost:68.4,  pb:2779, fuel:11.67, color:'#34d399' },
+    { name:'T185', loa:187, dwt:34327, cost:117.7, pb:4413, fuel:18.54, color:'#f59e0b' },
+  ];
+
+  // ── Chart factory ─────────────────────────────────────────────────────────
+  function makeChart(canvasId, yKey, yAxisLabel, unitSuffix) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+
+    const sweepPoints = SWEEP.loa.map((x, i) => ({ x, y: SWEEP[yKey][i] }));
+
+    new Chart(ctx, {
+      type: 'scatter',
+      data: {
+        datasets: [
+          {
+            type: 'line',
+            label: 'Sweep',
+            data: sweepPoints,
+            borderColor: '#3a6090',
+            backgroundColor: 'rgba(58,96,144,0.10)',
+            borderWidth: 2,
+            pointRadius: 0,
+            fill: true,
+            tension: 0.35,
+            order: 2,
+          },
+          ...BASELINE.map(b => ({
+            type: 'scatter',
+            label: b.name,
+            data: [{ x: b.loa, y: b[yKey] }],
+            backgroundColor: b.color,
+            borderColor: '#0a1628',
+            borderWidth: 2,
+            pointRadius: 7,
+            pointHoverRadius: 9,
+            order: 1,
+          })),
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            align: 'end',
+            labels: {
+              color: '#6a84a0',
+              boxWidth: 9,
+              boxHeight: 9,
+              font: { size: 10 },
+              filter: item => item.datasetIndex > 0,
+            },
+          },
+          tooltip: {
+            backgroundColor: '#162848',
+            borderColor: 'rgba(100,149,237,0.3)',
+            borderWidth: 1,
+            titleColor: '#cdd6e0',
+            bodyColor: '#8aaac8',
+            padding: 10,
+            callbacks: {
+              title: items => `LOA ${items[0].parsed.x} m`,
+              label: item => `${item.dataset.label}: ${item.parsed.y.toLocaleString()} ${unitSuffix}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            type: 'linear',
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#5070a0', font: { size: 10 } },
+            title: { display: true, text: 'LOA (m)', color: '#5070a0', font: { size: 10 } },
+          },
+          y: {
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: '#5070a0', font: { size: 10 } },
+            title: { display: true, text: yAxisLabel, color: '#5070a0', font: { size: 10 } },
+          },
+        },
+      },
+    });
+  }
+
+  makeChart('chartDWT',   'dwt',  'Deadweight (t)',   't');
+  makeChart('chartCost',  'cost', 'Build Cost ($M)',  '$M');
+  makeChart('chartPower', 'pb',   'Brake Power (kW)', 'kW');
+  makeChart('chartFuel',  'fuel', 'Fuel (t/day)',     't/day');
+</script>
+
+</body>
+</html>
