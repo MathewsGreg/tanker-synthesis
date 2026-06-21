@@ -5,147 +5,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>INDOPACOM Logistics Tanker Family — Synthesis Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0a1628; color: #cdd6e0; }
 
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: #0a1628;
-      color: #cdd6e0;
-      min-height: 100vh;
-    }
-
-    /* ── Header ── */
     header {
       background: linear-gradient(135deg, #0e2244 0%, #0a1628 55%, #0e2244 100%);
       border-bottom: 1px solid rgba(100,149,237,0.22);
       padding: 2.25rem 2rem 1.75rem;
       text-align: center;
     }
-    .eyebrow {
-      font-size: 0.65rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      color: #6495ed;
-      margin-bottom: 0.6rem;
-    }
-    header h1 {
-      font-size: 1.7rem;
-      font-weight: 700;
-      color: #e4ecf4;
-      letter-spacing: -0.01em;
-    }
-    .subtitle {
-      margin-top: 0.5rem;
-      font-size: 0.82rem;
-      color: #6a85a4;
-    }
+    .eyebrow { font-size: 0.65rem; letter-spacing: 0.22em; text-transform: uppercase; color: #6495ed; margin-bottom: 0.6rem; }
+    header h1 { font-size: 1.7rem; font-weight: 700; color: #e4ecf4; }
+    .subtitle { margin-top: 0.5rem; font-size: 0.82rem; color: #6a85a4; }
 
-    /* ── Layout ── */
-    .container {
-      max-width: 1160px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem 3rem;
-    }
+    .container { max-width: 1160px; margin: 0 auto; padding: 2rem 1.5rem 3rem; }
     .section-label {
-      font-size: 0.63rem;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #5070a0;
-      margin-bottom: 1rem;
-      padding-bottom: 0.4rem;
+      font-size: 0.63rem; letter-spacing: 0.18em; text-transform: uppercase;
+      color: #5070a0; margin-bottom: 1rem; padding-bottom: 0.4rem;
       border-bottom: 1px solid rgba(100,149,237,0.15);
     }
 
-    /* ── Family Cards ── */
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      margin-bottom: 2.75rem;
-    }
-    .card {
+    /* ── Slider ── */
+    .slider-section {
       background: #101f38;
-      border: 1px solid rgba(100,149,237,0.18);
+      border: 1px solid rgba(100,149,237,0.2);
       border-radius: 8px;
-      padding: 1.3rem 1.25rem;
-      position: relative;
-      overflow: hidden;
+      padding: 1.5rem 1.75rem 1.25rem;
+      margin-bottom: 2.5rem;
     }
-    .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: var(--accent);
-    }
-    .card.t120 { --accent: #38bdf8; }
-    .card.t150 { --accent: #34d399; }
-    .card.t185 { --accent: #f59e0b; }
+    .slider-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem; }
+    .slider-lbl { font-size: 0.72rem; color: #5a7898; text-transform: uppercase; letter-spacing: 0.1em; }
+    .slider-val { font-size: 2rem; font-weight: 700; color: #e4ecf4; font-variant-numeric: tabular-nums; }
+    .slider-val span { font-size: 1rem; font-weight: 400; color: #5a7898; margin-left: 0.25rem; }
 
-    .card-name {
-      font-size: 1.6rem;
-      font-weight: 700;
-      color: var(--accent);
-      line-height: 1;
-      margin-bottom: 0.2rem;
+    input[type=range] {
+      -webkit-appearance: none; width: 100%; height: 4px; outline: none;
+      background: linear-gradient(to right, #4a80b8 var(--pct,50%), #1e3050 var(--pct,50%));
+      border-radius: 2px; margin-bottom: 0.4rem;
     }
-    .card-role {
-      font-size: 0.72rem;
-      color: #5a7898;
-      margin-bottom: 1.1rem;
-      line-height: 1.3;
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+      background: #38bdf8; cursor: pointer; border: 3px solid #0a1628;
+      box-shadow: 0 0 0 2px rgba(56,189,248,0.4);
     }
-    .stat {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 0.28rem 0;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      font-size: 0.79rem;
+    input[type=range]::-moz-range-thumb {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #38bdf8; cursor: pointer; border: 3px solid #0a1628;
     }
-    .stat:last-child { border-bottom: none; }
-    .stat-lbl { color: #617d98; }
-    .stat-val { font-weight: 600; color: #c8d4e0; font-variant-numeric: tabular-nums; }
-    .stat-val.hi { color: var(--accent); }
+    .range-ends { display: flex; justify-content: space-between; font-size: 0.68rem; color: #3a5270; margin-bottom: 1.1rem; }
+
+    .metrics-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.65rem; }
+    .mc {
+      background: #0c1a2e; border: 1px solid rgba(100,149,237,0.1);
+      border-radius: 6px; padding: 0.7rem 0.5rem; text-align: center;
+    }
+    .mc-lbl { font-size: 0.63rem; color: #435e7a; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.3rem; }
+    .mc-val { font-size: 0.98rem; font-weight: 700; color: #a8c0d8; font-variant-numeric: tabular-nums; }
+    .mc-val.cpd { color: #34d399; }
+    .slider-note { font-size: 0.67rem; color: #3a5270; margin-top: 0.9rem; line-height: 1.5; }
+
+    /* ── Cards ── */
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2.75rem; }
+    .card { background: #101f38; border: 1px solid rgba(100,149,237,0.18); border-radius: 8px; padding: 1.3rem 1.25rem; position: relative; overflow: hidden; }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--ac); }
+    .t120 { --ac: #38bdf8; } .t150 { --ac: #34d399; } .t185 { --ac: #f59e0b; }
+    .card-name { font-size: 1.6rem; font-weight: 700; color: var(--ac); line-height: 1; margin-bottom: 0.2rem; }
+    .card-role { font-size: 0.72rem; color: #5a7898; margin-bottom: 1.1rem; line-height: 1.3; }
+    .st { display: flex; justify-content: space-between; align-items: baseline; padding: 0.27rem 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.79rem; }
+    .st:last-child { border-bottom: none; }
+    .sl { color: #607890; }
+    .sv { font-weight: 600; color: #c8d4e0; font-variant-numeric: tabular-nums; }
+    .sv.hi { color: var(--ac); }
+    .sv.cpd { color: #34d399; }
 
     /* ── Charts ── */
-    .charts {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.1rem;
-    }
-    .chart-card {
-      background: #101f38;
-      border: 1px solid rgba(100,149,237,0.14);
-      border-radius: 8px;
-      padding: 1.2rem 1.25rem 1rem;
-    }
-    .chart-title {
-      font-size: 0.78rem;
-      font-weight: 600;
-      color: #8aaac8;
-      margin-bottom: 0.9rem;
-    }
-    .chart-wrap {
-      position: relative;
-      height: 210px;
-    }
+    .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.1rem; }
+    .full { grid-column: 1 / -1; }
+    .chart-card { background: #101f38; border: 1px solid rgba(100,149,237,0.14); border-radius: 8px; padding: 1.2rem 1.25rem 1rem; }
+    .chart-title { font-size: 0.78rem; font-weight: 600; color: #8aaac8; margin-bottom: 0.9rem; }
+    .chart-wrap { position: relative; height: 215px; }
+    .chart-wrap.tall { height: 250px; }
+    .chart-note { font-size: 0.67rem; color: #3a5270; margin-top: 1.25rem; line-height: 1.55; }
 
-    /* ── Footer ── */
-    footer {
-      text-align: center;
-      padding: 1.5rem;
-      font-size: 0.68rem;
-      color: #2e4a6a;
-      border-top: 1px solid rgba(100,149,237,0.1);
-      margin-top: 2rem;
-    }
+    footer { text-align: center; padding: 1.5rem; font-size: 0.68rem; color: #2e4a6a; border-top: 1px solid rgba(100,149,237,0.1); margin-top: 2rem; }
 
     @media (max-width: 800px) {
-      .cards  { grid-template-columns: 1fr; }
-      .charts { grid-template-columns: 1fr; }
-      header h1 { font-size: 1.25rem; }
+      .cards, .charts-grid { grid-template-columns: 1fr; }
+      .full { grid-column: 1; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      header h1 { font-size: 1.2rem; }
     }
   </style>
 </head>
@@ -154,102 +105,131 @@
 <header>
   <div class="eyebrow">Naval Architecture · Parametric Synthesis · ABS SVR / Jones Act / MARPOL</div>
   <h1>INDOPACOM Distributed Logistics Tanker Family</h1>
-  <div class="subtitle">
-    100 – 200 m LOA &nbsp;·&nbsp; MAN 32/44CR Propulsion &nbsp;·&nbsp;
-    Pearl Harbor → Guam Mission Radius (4,500 nm)
-  </div>
+  <div class="subtitle">100 – 200 m LOA &nbsp;·&nbsp; MAN 32/44CR Propulsion &nbsp;·&nbsp; Pearl Harbor → Guam Mission Radius</div>
 </header>
 
 <div class="container">
 
+  <!-- Slider -->
+  <p class="section-label">Design Space Explorer</p>
+  <div class="slider-section">
+    <div class="slider-header">
+      <span class="slider-lbl">Length Overall</span>
+      <div class="slider-val" id="loaVal">150<span>m</span></div>
+    </div>
+    <input type="range" id="loaSlider" min="100" max="200" value="150" step="1">
+    <div class="range-ends"><span>100 m — T100</span><span>150 m — T150</span><span>200 m — T200</span></div>
+    <div class="metrics-grid">
+      <div class="mc"><div class="mc-lbl">Deadweight</div><div class="mc-val" id="mDWT">—</div></div>
+      <div class="mc"><div class="mc-lbl">Build Cost</div><div class="mc-val" id="mCost">—</div></div>
+      <div class="mc"><div class="mc-lbl">Cost / DWT</div><div class="mc-val cpd" id="mCPD">—</div></div>
+      <div class="mc"><div class="mc-lbl">Brake Power</div><div class="mc-val" id="mPB">—</div></div>
+      <div class="mc"><div class="mc-lbl">Fuel / Day</div><div class="mc-val" id="mFuel">—</div></div>
+    </div>
+    <div class="slider-note">
+      Interpolated from the parametric sweep (Cb = 0.78, Vs = 14.0 kn, 8,000 nm range, MAN 32/44CR).
+      Drag to explore any LOA — the dashed line on each chart tracks your selection.
+    </div>
+  </div>
+
+  <!-- Cards -->
   <p class="section-label">Baseline Family — Three Design Anchor Points</p>
   <div class="cards">
 
     <div class="card t120">
       <div class="card-name">T120</div>
       <div class="card-role">Coastal Logistics · INDOPACOM Minimum</div>
-      <div class="stat"><span class="stat-lbl">LOA</span>              <span class="stat-val">122 m</span></div>
-      <div class="stat"><span class="stat-lbl">Beam / Depth</span>     <span class="stat-val">18.5 m / 9.8 m</span></div>
-      <div class="stat"><span class="stat-lbl">Draft</span>            <span class="stat-val">6.8 m</span></div>
-      <div class="stat"><span class="stat-lbl">Displacement</span>     <span class="stat-val">11,716 t</span></div>
-      <div class="stat"><span class="stat-lbl">Deadweight</span>       <span class="stat-val hi">9,136 t</span></div>
-      <div class="stat"><span class="stat-lbl">Cargo Capacity</span>   <span class="stat-val">8,948 t</span></div>
-      <div class="stat"><span class="stat-lbl">Design Speed</span>     <span class="stat-val">13.5 kn</span></div>
-      <div class="stat"><span class="stat-lbl">Brake Power</span>      <span class="stat-val">1,699 kW</span></div>
-      <div class="stat"><span class="stat-lbl">Fuel Rate</span>        <span class="stat-val">7.14 t/day</span></div>
-      <div class="stat"><span class="stat-lbl">Range</span>            <span class="stat-val">5,500 nm</span></div>
-      <div class="stat"><span class="stat-lbl">GM (loaded)</span>      <span class="stat-val">7.94 m</span></div>
-      <div class="stat"><span class="stat-lbl">Crew</span>             <span class="stat-val">8</span></div>
-      <div class="stat"><span class="stat-lbl">Build Cost</span>       <span class="stat-val hi">$39.2 M</span></div>
-      <div class="stat"><span class="stat-lbl">Annual OpEx</span>      <span class="stat-val">$3.8 M/yr</span></div>
+      <div class="st"><span class="sl">LOA</span>           <span class="sv">122 m</span></div>
+      <div class="st"><span class="sl">Beam / Depth</span>  <span class="sv">18.5 m / 9.8 m</span></div>
+      <div class="st"><span class="sl">Draft</span>         <span class="sv">6.8 m</span></div>
+      <div class="st"><span class="sl">Displacement</span>  <span class="sv">11,716 t</span></div>
+      <div class="st"><span class="sl">Deadweight</span>    <span class="sv hi">9,136 t</span></div>
+      <div class="st"><span class="sl">Cargo</span>         <span class="sv">8,948 t</span></div>
+      <div class="st"><span class="sl">Design Speed</span>  <span class="sv">13.5 kn</span></div>
+      <div class="st"><span class="sl">Brake Power</span>   <span class="sv">1,699 kW</span></div>
+      <div class="st"><span class="sl">Fuel Rate</span>     <span class="sv">7.14 t/day</span></div>
+      <div class="st"><span class="sl">Range</span>         <span class="sv">5,500 nm</span></div>
+      <div class="st"><span class="sl">GM (loaded)</span>   <span class="sv">7.94 m</span></div>
+      <div class="st"><span class="sl">Crew</span>          <span class="sv">8</span></div>
+      <div class="st"><span class="sl">Build Cost</span>    <span class="sv hi">$39.2 M</span></div>
+      <div class="st"><span class="sl">Cost / DWT</span>   <span class="sv cpd">$4,291 / t</span></div>
+      <div class="st"><span class="sl">Annual OpEx</span>   <span class="sv">$3.8 M/yr</span></div>
     </div>
 
     <div class="card t150">
       <div class="card-name">T150</div>
       <div class="card-role">Primary INDOPACOM Logistics Tanker</div>
-      <div class="stat"><span class="stat-lbl">LOA</span>              <span class="stat-val">152 m</span></div>
-      <div class="stat"><span class="stat-lbl">Beam / Depth</span>     <span class="stat-val">23.0 m / 12.5 m</span></div>
-      <div class="stat"><span class="stat-lbl">Draft</span>            <span class="stat-val">8.5 m</span></div>
-      <div class="stat"><span class="stat-lbl">Displacement</span>     <span class="stat-val">22,976 t</span></div>
-      <div class="stat"><span class="stat-lbl">Deadweight</span>       <span class="stat-val hi">18,288 t</span></div>
-      <div class="stat"><span class="stat-lbl">Cargo Capacity</span>   <span class="stat-val">17,913 t</span></div>
-      <div class="stat"><span class="stat-lbl">Design Speed</span>     <span class="stat-val">14.0 kn</span></div>
-      <div class="stat"><span class="stat-lbl">Brake Power</span>      <span class="stat-val">2,779 kW</span></div>
-      <div class="stat"><span class="stat-lbl">Fuel Rate</span>        <span class="stat-val">11.67 t/day</span></div>
-      <div class="stat"><span class="stat-lbl">Range</span>            <span class="stat-val">8,000 nm</span></div>
-      <div class="stat"><span class="stat-lbl">GM (loaded)</span>      <span class="stat-val">9.76 m</span></div>
-      <div class="stat"><span class="stat-lbl">Crew</span>             <span class="stat-val">10</span></div>
-      <div class="stat"><span class="stat-lbl">Build Cost</span>       <span class="stat-val hi">$68.4 M</span></div>
-      <div class="stat"><span class="stat-lbl">Annual OpEx</span>      <span class="stat-val">$5.9 M/yr</span></div>
+      <div class="st"><span class="sl">LOA</span>           <span class="sv">152 m</span></div>
+      <div class="st"><span class="sl">Beam / Depth</span>  <span class="sv">23.0 m / 12.5 m</span></div>
+      <div class="st"><span class="sl">Draft</span>         <span class="sv">8.5 m</span></div>
+      <div class="st"><span class="sl">Displacement</span>  <span class="sv">22,976 t</span></div>
+      <div class="st"><span class="sl">Deadweight</span>    <span class="sv hi">18,288 t</span></div>
+      <div class="st"><span class="sl">Cargo</span>         <span class="sv">17,913 t</span></div>
+      <div class="st"><span class="sl">Design Speed</span>  <span class="sv">14.0 kn</span></div>
+      <div class="st"><span class="sl">Brake Power</span>   <span class="sv">2,779 kW</span></div>
+      <div class="st"><span class="sl">Fuel Rate</span>     <span class="sv">11.67 t/day</span></div>
+      <div class="st"><span class="sl">Range</span>         <span class="sv">8,000 nm</span></div>
+      <div class="st"><span class="sl">GM (loaded)</span>   <span class="sv">9.76 m</span></div>
+      <div class="st"><span class="sl">Crew</span>          <span class="sv">10</span></div>
+      <div class="st"><span class="sl">Build Cost</span>    <span class="sv hi">$68.4 M</span></div>
+      <div class="st"><span class="sl">Cost / DWT</span>   <span class="sv cpd">$3,741 / t</span></div>
+      <div class="st"><span class="sl">Annual OpEx</span>   <span class="sv">$5.9 M/yr</span></div>
     </div>
 
     <div class="card t185">
       <div class="card-name">T185</div>
       <div class="card-role">Forward Area Bulk Replenishment</div>
-      <div class="stat"><span class="stat-lbl">LOA</span>              <span class="stat-val">187 m</span></div>
-      <div class="stat"><span class="stat-lbl">Beam / Depth</span>     <span class="stat-val">28.5 m / 15.5 m</span></div>
-      <div class="stat"><span class="stat-lbl">Draft</span>            <span class="stat-val">10.2 m</span></div>
-      <div class="stat"><span class="stat-lbl">Displacement</span>     <span class="stat-val">42,606 t</span></div>
-      <div class="stat"><span class="stat-lbl">Deadweight</span>       <span class="stat-val hi">34,327 t</span></div>
-      <div class="stat"><span class="stat-lbl">Cargo Capacity</span>   <span class="stat-val">33,703 t</span></div>
-      <div class="stat"><span class="stat-lbl">Design Speed</span>     <span class="stat-val">14.5 kn</span></div>
-      <div class="stat"><span class="stat-lbl">Brake Power</span>      <span class="stat-val">4,413 kW</span></div>
-      <div class="stat"><span class="stat-lbl">Fuel Rate</span>        <span class="stat-val">18.54 t/day</span></div>
-      <div class="stat"><span class="stat-lbl">Range</span>            <span class="stat-val">9,000 nm</span></div>
-      <div class="stat"><span class="stat-lbl">GM (loaded)</span>      <span class="stat-val">12.40 m</span></div>
-      <div class="stat"><span class="stat-lbl">Crew</span>             <span class="stat-val">14</span></div>
-      <div class="stat"><span class="stat-lbl">Build Cost</span>       <span class="stat-val hi">$117.7 M</span></div>
-      <div class="stat"><span class="stat-lbl">Annual OpEx</span>      <span class="stat-val">$9.4 M/yr</span></div>
+      <div class="st"><span class="sl">LOA</span>           <span class="sv">187 m</span></div>
+      <div class="st"><span class="sl">Beam / Depth</span>  <span class="sv">28.5 m / 15.5 m</span></div>
+      <div class="st"><span class="sl">Draft</span>         <span class="sv">10.2 m</span></div>
+      <div class="st"><span class="sl">Displacement</span>  <span class="sv">42,606 t</span></div>
+      <div class="st"><span class="sl">Deadweight</span>    <span class="sv hi">34,327 t</span></div>
+      <div class="st"><span class="sl">Cargo</span>         <span class="sv">33,703 t</span></div>
+      <div class="st"><span class="sl">Design Speed</span>  <span class="sv">14.5 kn</span></div>
+      <div class="st"><span class="sl">Brake Power</span>   <span class="sv">4,413 kW</span></div>
+      <div class="st"><span class="sl">Fuel Rate</span>     <span class="sv">18.54 t/day</span></div>
+      <div class="st"><span class="sl">Range</span>         <span class="sv">9,000 nm</span></div>
+      <div class="st"><span class="sl">GM (loaded)</span>   <span class="sv">12.40 m</span></div>
+      <div class="st"><span class="sl">Crew</span>          <span class="sv">14</span></div>
+      <div class="st"><span class="sl">Build Cost</span>    <span class="sv hi">$117.7 M</span></div>
+      <div class="st"><span class="sl">Cost / DWT</span>   <span class="sv cpd">$3,429 / t</span></div>
+      <div class="st"><span class="sl">Annual OpEx</span>   <span class="sv">$9.4 M/yr</span></div>
     </div>
 
-  </div><!-- /cards -->
+  </div>
 
-  <p class="section-label">Trade Space — 100–200 m LOA Parametric Sweep</p>
-  <div class="charts">
-
+  <!-- Charts -->
+  <p class="section-label">Trade Space — 100–200 m LOA Parametric Sweep (Cb = 0.78, Vs = 14.0 kn)</p>
+  <div class="charts-grid">
     <div class="chart-card">
       <div class="chart-title">Deadweight Capacity vs LOA</div>
-      <div class="chart-wrap"><canvas id="chartDWT"></canvas></div>
+      <div class="chart-wrap"><canvas id="cDWT"></canvas></div>
     </div>
-
     <div class="chart-card">
       <div class="chart-title">Build Cost vs LOA</div>
-      <div class="chart-wrap"><canvas id="chartCost"></canvas></div>
+      <div class="chart-wrap"><canvas id="cCost"></canvas></div>
     </div>
-
     <div class="chart-card">
       <div class="chart-title">Installed Brake Power vs LOA</div>
-      <div class="chart-wrap"><canvas id="chartPower"></canvas></div>
+      <div class="chart-wrap"><canvas id="cPB"></canvas></div>
     </div>
-
     <div class="chart-card">
       <div class="chart-title">Fuel Consumption vs LOA</div>
-      <div class="chart-wrap"><canvas id="chartFuel"></canvas></div>
+      <div class="chart-wrap"><canvas id="cFuel"></canvas></div>
     </div>
+    <div class="chart-card full">
+      <div class="chart-title">Cost per Deadweight Tonne vs LOA &nbsp;—&nbsp; Economy of Scale</div>
+      <div class="chart-wrap tall"><canvas id="cCPD"></canvas></div>
+    </div>
+  </div>
 
-  </div><!-- /charts -->
+  <p class="chart-note">
+    Colored markers (◆ T120 · ◆ T150 · ◆ T185) show the optimized baseline designs, which use individually
+    tuned hull forms (Cb 0.77–0.79) and different design speeds (13.5–14.5 kn) — small offsets from the
+    constant-parameter sweep curve are expected, not errors. Dashed vertical line tracks the slider.
+  </p>
 
-</div><!-- /container -->
+</div>
 
 <footer>
   Greg Tanker Synthesis Model v0.1 &nbsp;·&nbsp;
@@ -258,106 +238,185 @@
 </footer>
 
 <script>
-  // ── Data ──────────────────────────────────────────────────────────────────
-  const SWEEP = {
-    loa:  [100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200],
-    dwt:  [4988,5810,6717,7713,8803,9991,11282,12679,14188,15812,17556,19424,21421,23550,25817,28225,30779,33484,36343,39361,42543],
-    cost: [25.3,28.2,31.4,34.8,38.5,42.4,46.6,51.1,55.8,60.8,66.2,71.8,77.7,84.0,90.6,97.5,104.7,112.3,120.2,128.5,137.2],
-    pb:   [1302,1422,1548,1678,1813,1952,2096,2244,2396,2553,2714,2879,3048,3222,3399,3581,3766,3956,4150,4347,4549],
-    fuel: [5.47,5.97,6.50,7.05,7.61,8.20,8.80,9.42,10.06,10.72,11.40,12.09,12.80,13.53,14.28,15.04,15.82,16.62,17.43,18.26,19.10],
-  };
+// ── Data ────────────────────────────────────────────────────────────────────
 
-  const BASELINE = [
-    { name:'T120', loa:122, dwt:9136,  cost:39.2,  pb:1699, fuel:7.14,  color:'#38bdf8' },
-    { name:'T150', loa:152, dwt:18288, cost:68.4,  pb:2779, fuel:11.67, color:'#34d399' },
-    { name:'T185', loa:187, dwt:34327, cost:117.7, pb:4413, fuel:18.54, color:'#f59e0b' },
-  ];
+const SW = {
+  loa:  [100,105,110,115,120,125,130,135,140,145,150,155,160,165,170,175,180,185,190,195,200],
+  dwt:  [4988,5810,6717,7713,8803,9991,11282,12679,14188,15812,17556,19424,21421,23550,25817,28225,30779,33484,36343,39361,42543],
+  cost: [25.3,28.2,31.4,34.8,38.5,42.4,46.6,51.1,55.8,60.8,66.2,71.8,77.7,84.0,90.6,97.5,104.7,112.3,120.2,128.5,137.2],
+  pb:   [1302,1422,1548,1678,1813,1952,2096,2244,2396,2553,2714,2879,3048,3222,3399,3581,3766,3956,4150,4347,4549],
+  fuel: [5.47,5.97,6.50,7.05,7.61,8.20,8.80,9.42,10.06,10.72,11.40,12.09,12.80,13.53,14.28,15.04,15.82,16.62,17.43,18.26,19.10],
+};
+SW.cpd = SW.loa.map((_, i) => Math.round(SW.cost[i] * 1e6 / SW.dwt[i]));
 
-  // ── Chart factory ─────────────────────────────────────────────────────────
-  function makeChart(canvasId, yKey, yAxisLabel, unitSuffix) {
-    const ctx = document.getElementById(canvasId).getContext('2d');
+const BL = [
+  { name:'T120', loa:122, dwt:9136,  cost:39.2,  pb:1699, fuel:7.14,  cpd:Math.round(39.2e6/9136),  color:'#38bdf8' },
+  { name:'T150', loa:152, dwt:18288, cost:68.4,  pb:2779, fuel:11.67, cpd:Math.round(68.4e6/18288), color:'#34d399' },
+  { name:'T185', loa:187, dwt:34327, cost:117.7, pb:4413, fuel:18.54, cpd:Math.round(117.7e6/34327),color:'#f59e0b' },
+];
 
-    const sweepPoints = SWEEP.loa.map((x, i) => ({ x, y: SWEEP[yKey][i] }));
+// ── Interpolation ────────────────────────────────────────────────────────────
 
-    new Chart(ctx, {
-      type: 'scatter',
-      data: {
-        datasets: [
-          {
-            type: 'line',
-            label: 'Sweep',
-            data: sweepPoints,
-            borderColor: '#3a6090',
-            backgroundColor: 'rgba(58,96,144,0.10)',
-            borderWidth: 2,
-            pointRadius: 0,
-            fill: true,
-            tension: 0.35,
-            order: 2,
-          },
-          ...BASELINE.map(b => ({
-            type: 'scatter',
-            label: b.name,
-            data: [{ x: b.loa, y: b[yKey] }],
-            backgroundColor: b.color,
-            borderColor: '#0a1628',
-            borderWidth: 2,
-            pointRadius: 7,
-            pointHoverRadius: 9,
-            order: 1,
-          })),
-        ],
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+function interp(loa) {
+  const L = SW.loa, n = L.length - 1;
+  if (loa <= L[0])  return { dwt:SW.dwt[0],  cost:SW.cost[0],  pb:SW.pb[0],  fuel:SW.fuel[0],  cpd:SW.cpd[0]  };
+  if (loa >= L[n])  return { dwt:SW.dwt[n],  cost:SW.cost[n],  pb:SW.pb[n],  fuel:SW.fuel[n],  cpd:SW.cpd[n]  };
+  let i = 0;
+  while (i < n && L[i+1] < loa) i++;
+  const t = (loa - L[i]) / (L[i+1] - L[i]);
+  const dwt  = Math.round(lerp(SW.dwt[i],  SW.dwt[i+1],  t));
+  const cost  = lerp(SW.cost[i], SW.cost[i+1], t);
+  const pb    = Math.round(lerp(SW.pb[i],   SW.pb[i+1],   t));
+  const fuel  = lerp(SW.fuel[i], SW.fuel[i+1], t);
+  return { dwt, cost, pb, fuel, cpd: Math.round(cost * 1e6 / dwt) };
+}
+
+// ── Formatters ───────────────────────────────────────────────────────────────
+
+const F = {
+  dwt:  v => v.toLocaleString('en-US') + ' t',
+  cost: v => '$' + (+v).toFixed(1) + ' M',
+  cpd:  v => '$' + Math.round(v).toLocaleString('en-US') + ' / t',
+  pb:   v => Math.round(v).toLocaleString('en-US') + ' kW',
+  fuel: v => (+v).toFixed(2) + ' t/day',
+};
+
+// ── Chart factory ────────────────────────────────────────────────────────────
+
+const CHARTS = [];
+
+function makeChart(id, key, yLabel, fmt, yOpts) {
+  const ctx = document.getElementById(id).getContext('2d');
+
+  const chart = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          type: 'line',
+          label: 'Sweep',
+          data: SW.loa.map((x, i) => ({ x, y: SW[key][i] })),
+          borderColor: '#3a6090',
+          backgroundColor: 'rgba(58,96,144,0.09)',
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: true,
+          tension: 0.3,
+          order: 2,
+          datalabels: { display: false },
+        },
+        ...BL.map(b => ({
+          type: 'scatter',
+          label: b.name,
+          data: [{ x: b.loa, y: b[key] }],
+          backgroundColor: b.color,
+          borderColor: '#0a1628',
+          borderWidth: 2,
+          pointRadius: 7,
+          pointHoverRadius: 9,
+          order: 1,
+          datalabels: {
             display: true,
-            position: 'top',
-            align: 'end',
-            labels: {
-              color: '#6a84a0',
-              boxWidth: 9,
-              boxHeight: 9,
-              font: { size: 10 },
-              filter: item => item.datasetIndex > 0,
-            },
+            align: 'top',
+            anchor: 'end',
+            offset: 3,
+            color: b.color,
+            font: { size: 9, weight: '600' },
+            formatter: () => b.name,
           },
-          tooltip: {
-            backgroundColor: '#162848',
-            borderColor: 'rgba(100,149,237,0.3)',
-            borderWidth: 1,
-            titleColor: '#cdd6e0',
-            bodyColor: '#8aaac8',
-            padding: 10,
-            callbacks: {
-              title: items => `LOA ${items[0].parsed.x} m`,
-              label: item => `${item.dataset.label}: ${item.parsed.y.toLocaleString()} ${unitSuffix}`,
-            },
+        })),
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 18 } },
+      plugins: {
+        datalabels: { display: false },
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          labels: {
+            color: '#6a84a0', boxWidth: 8, boxHeight: 8, font: { size: 10 },
+            filter: item => item.datasetIndex > 0,
           },
         },
-        scales: {
-          x: {
-            type: 'linear',
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#5070a0', font: { size: 10 } },
-            title: { display: true, text: 'LOA (m)', color: '#5070a0', font: { size: 10 } },
+        tooltip: {
+          backgroundColor: '#162848',
+          borderColor: 'rgba(100,149,237,0.3)',
+          borderWidth: 1,
+          titleColor: '#cdd6e0',
+          bodyColor: '#8aaac8',
+          padding: 10,
+          callbacks: {
+            title: items => 'LOA ' + items[0].parsed.x + ' m',
+            label: item => item.dataset.label + ': ' + fmt(item.parsed.y),
           },
-          y: {
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            ticks: { color: '#5070a0', font: { size: 10 } },
-            title: { display: true, text: yAxisLabel, color: '#5070a0', font: { size: 10 } },
+        },
+        annotation: {
+          annotations: {
+            sl: {
+              type: 'line',
+              xMin: 150, xMax: 150,
+              borderColor: 'rgba(180,215,245,0.22)',
+              borderWidth: 1.5,
+              borderDash: [4, 4],
+            },
           },
         },
       },
-    });
-  }
+      scales: {
+        x: {
+          type: 'linear', min: 97, max: 203,
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#5070a0', font: { size: 10 }, stepSize: 25 },
+          title: { display: true, text: 'LOA (m)', color: '#5070a0', font: { size: 10 } },
+        },
+        y: Object.assign({
+          grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { color: '#5070a0', font: { size: 10 }, callback: v => fmt(v) },
+          title: { display: true, text: yLabel, color: '#5070a0', font: { size: 10 } },
+        }, yOpts || {}),
+      },
+    },
+  });
 
-  makeChart('chartDWT',   'dwt',  'Deadweight (t)',   't');
-  makeChart('chartCost',  'cost', 'Build Cost ($M)',  '$M');
-  makeChart('chartPower', 'pb',   'Brake Power (kW)', 'kW');
-  makeChart('chartFuel',  'fuel', 'Fuel (t/day)',     't/day');
+  CHARTS.push(chart);
+}
+
+makeChart('cDWT',  'dwt',  'Deadweight (t)',          F.dwt,  {});
+makeChart('cCost', 'cost', 'Build Cost ($M)',         F.cost, {});
+makeChart('cPB',   'pb',   'Brake Power (kW)',        F.pb,   {});
+makeChart('cFuel', 'fuel', 'Fuel Consumption (t/day)',F.fuel, {});
+makeChart('cCPD',  'cpd',  '$ per Deadweight Tonne', F.cpd,  { suggestedMin: 2800 });
+
+// ── Slider ───────────────────────────────────────────────────────────────────
+
+function updateSlider(loa) {
+  document.getElementById('loaVal').innerHTML = loa + '<span>m</span>';
+  const pct = ((loa - 100) / 100 * 100).toFixed(1);
+  document.getElementById('loaSlider').style.setProperty('--pct', pct + '%');
+
+  const m = interp(loa);
+  document.getElementById('mDWT').textContent  = F.dwt(m.dwt);
+  document.getElementById('mCost').textContent = F.cost(m.cost);
+  document.getElementById('mCPD').textContent  = F.cpd(m.cpd);
+  document.getElementById('mPB').textContent   = F.pb(m.pb);
+  document.getElementById('mFuel').textContent = F.fuel(m.fuel);
+
+  CHARTS.forEach(c => {
+    c.options.plugins.annotation.annotations.sl.xMin = loa;
+    c.options.plugins.annotation.annotations.sl.xMax = loa;
+    c.update('none');
+  });
+}
+
+const slider = document.getElementById('loaSlider');
+slider.addEventListener('input', () => updateSlider(+slider.value));
+updateSlider(150);
 </script>
 
 </body>
